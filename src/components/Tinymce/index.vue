@@ -1,8 +1,8 @@
 <template>
   <div :class="{fullscreen:fullscreen}" class="tinymce-container editor-container">
-    <textarea :id="tinymceId" class="tinymce-textarea"/>
+    <textarea :id="tinymceId" class="tinymce-textarea" />
     <div class="editor-custom-btn-container">
-      <editorImage color="#1890ff" class="editor-upload-btn" @successCBK="imageSuccessCBK"/>
+      <editorImage color="#1890ff" class="editor-upload-btn" @successCBK="imageSuccessCBK" />
     </div>
   </div>
 </template>
@@ -18,7 +18,9 @@ export default {
   props: {
     id: {
       type: String,
-      default: 'vue-tinymce-' + +new Date()
+      default: function() {
+        return 'vue-tinymce-' + +new Date() + ((Math.random() * 1000).toFixed(0) + '')
+      }
     },
     value: {
       type: String,
@@ -155,8 +157,13 @@ export default {
       })
     },
     destroyTinymce() {
-      if (window.tinymce.get(this.tinymceId)) {
-        window.tinymce.get(this.tinymceId).destroy()
+      const tinymce = window.tinymce.get(this.tinymceId)
+      if (this.fullscreen) {
+        tinymce.execCommand('mceFullScreen')
+      }
+
+      if (tinymce) {
+        tinymce.destroy()
       }
     },
     setContent(value) {
@@ -178,6 +185,7 @@ export default {
 <style scoped>
 .tinymce-container {
   position: relative;
+  line-height: normal;
 }
 .tinymce-container>>>.mce-fullscreen {
   z-index: 10000;

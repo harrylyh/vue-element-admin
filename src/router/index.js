@@ -4,7 +4,7 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 /* Layout */
-import Layout from '@/views/layout/Layout'
+import Layout from '@/layout'
 
 /* Router Modules */
 import componentsRouter from './modules/components'
@@ -12,7 +12,7 @@ import chartsRouter from './modules/charts'
 import tableRouter from './modules/table'
 import nestedRouter from './modules/nested'
 
-/** note: Submenu only appear when children.length>=1
+/** note: sub-menu only appear when children.length>=1
  *  detail see  https://panjiachen.github.io/vue-element-admin-site/guide/essentials/router-and-nav.html
  **/
 
@@ -24,13 +24,21 @@ import nestedRouter from './modules/nested'
 * redirect: noredirect           if `redirect:noredirect` will no redirect in the breadcrumb
 * name:'router-name'             the name is used by <keep-alive> (must set!!!)
 * meta : {
-    roles: ['admin','editor']     will control the page roles (you can set multiple roles)
-    title: 'title'               the name show in submenu and breadcrumb (recommend set)
-    icon: 'svg-name'             the icon show in the sidebar,
-    noCache: true                if true ,the page will no be cached(default is false)
+    roles: ['admin','editor']    will control the page roles (you can set multiple roles)
+    title: 'title'               the name show in sub-menu and breadcrumb (recommend set)
+    icon: 'svg-name'             the icon show in the sidebar
+    noCache: true                if true, the page will no be cached(default is false)
+    breadcrumb: false            if false, the item will hidden in breadcrumb(default is true)
+    affix: true                  if true, the tag will affix in the tags-view
   }
 **/
-export const constantRouterMap = [
+
+/**
+ * constantRoutes
+ * a base page that does not have permission requirements
+ * all roles can be accessed
+ * */
+export const constantRoutes = [
   {
     path: '/redirect',
     component: Layout,
@@ -71,20 +79,19 @@ export const constantRouterMap = [
         path: 'dashboard',
         component: () => import('@/views/dashboard/index'),
         name: 'Dashboard',
-        meta: { title: 'dashboard', icon: 'dashboard', noCache: true }
+        meta: { title: 'dashboard', icon: 'dashboard', noCache: true, affix: true }
       }
     ]
   },
   {
     path: '/documentation',
     component: Layout,
-    redirect: '/documentation/index',
     children: [
       {
         path: 'index',
         component: () => import('@/views/documentation/index'),
         name: 'Documentation',
-        meta: { title: 'documentation', icon: 'documentation', noCache: true }
+        meta: { title: 'documentation', icon: 'documentation', affix: true }
       }
     ]
   },
@@ -103,13 +110,11 @@ export const constantRouterMap = [
   }
 ]
 
-export default new Router({
-  // mode: 'history', // require service support
-  scrollBehavior: () => ({ y: 0 }),
-  routes: constantRouterMap
-})
-
-export const asyncRouterMap = [
+/**
+ * asyncRoutes
+ * the routes that need to be dynamically loaded based on user roles
+*/
+export const asyncRoutes = [
   {
     path: '/permission',
     component: Layout,
@@ -138,6 +143,15 @@ export const asyncRouterMap = [
           title: 'directivePermission'
           // if do not set roles, means: this page does not require permission
         }
+      },
+      {
+        path: 'role',
+        component: () => import('@/views/permission/role'),
+        name: 'RolePermission',
+        meta: {
+          title: 'rolePermission',
+          roles: ['admin']
+        }
       }
     ]
   },
@@ -155,7 +169,7 @@ export const asyncRouterMap = [
     ]
   },
 
-  /** When your routing table is too long, you can split it into small modules**/
+  /** when your routing map is too long, you can split it into small modules **/
   componentsRouter,
   chartsRouter,
   nestedRouter,
@@ -268,6 +282,12 @@ export const asyncRouterMap = [
         meta: { title: 'selectExcel' }
       },
       {
+        path: 'export-merge-header',
+        component: () => import('@/views/excel/mergeHeader'),
+        name: 'MergeHeader',
+        meta: { title: 'mergeHeader' }
+      },
+      {
         path: 'upload-excel',
         component: () => import('@/views/excel/uploadExcel'),
         name: 'UploadExcel',
@@ -290,6 +310,25 @@ export const asyncRouterMap = [
         meta: { title: 'exportZip' }
       }
     ]
+  },
+
+  {
+    path: '/pdf',
+    component: Layout,
+    redirect: '/pdf/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/pdf/index'),
+        name: 'PDF',
+        meta: { title: 'pdf', icon: 'pdf' }
+      }
+    ]
+  },
+  {
+    path: '/pdf/download',
+    component: () => import('@/views/pdf/download'),
+    hidden: true
   },
 
   {
@@ -346,3 +385,19 @@ export const asyncRouterMap = [
 
   { path: '*', redirect: '/404', hidden: true }
 ]
+
+const createRouter = () => new Router({
+  // mode: 'history', // require service support
+  scrollBehavior: () => ({ y: 0 }),
+  routes: constantRoutes
+})
+
+const router = createRouter()
+
+// Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
+export function resetRouter() {
+  const newRouter = createRouter()
+  router.matcher = newRouter.matcher // reset router
+}
+
+export default router

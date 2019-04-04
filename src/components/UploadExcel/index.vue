@@ -1,9 +1,11 @@
 <template>
   <div>
-    <input id="excel-upload-input" ref="excel-upload-input" type="file" accept=".xlsx, .xls" @change="handleClick">
-    <div id="drop" @drop="handleDrop" @dragover="handleDragover" @dragenter="handleDragover">
+    <input ref="excel-upload-input" class="excel-upload-input" type="file" accept=".xlsx, .xls" @change="handleClick">
+    <div class="drop" @drop="handleDrop" @dragover="handleDragover" @dragenter="handleDragover">
       Drop excel file here or
-      <el-button :loading="loading" style="margin-left:16px;" size="mini" type="primary" @click="handleUpload">Browse</el-button>
+      <el-button :loading="loading" style="margin-left:16px;" size="mini" type="primary" @click="handleUpload">
+        Browse
+      </el-button>
     </div>
   </div>
 </template>
@@ -56,7 +58,7 @@ export default {
       e.dataTransfer.dropEffect = 'copy'
     },
     handleUpload() {
-      document.getElementById('excel-upload-input').click()
+      this.$refs['excel-upload-input'].click()
     },
     handleClick(e) {
       const files = e.target.files
@@ -82,8 +84,7 @@ export default {
         const reader = new FileReader()
         reader.onload = e => {
           const data = e.target.result
-          const fixedData = this.fixData(data)
-          const workbook = XLSX.read(btoa(fixedData), { type: 'base64' })
+          const workbook = XLSX.read(data, { type: 'array' })
           const firstSheetName = workbook.SheetNames[0]
           const worksheet = workbook.Sheets[firstSheetName]
           const header = this.getHeaderRow(worksheet)
@@ -94,14 +95,6 @@ export default {
         }
         reader.readAsArrayBuffer(rawFile)
       })
-    },
-    fixData(data) {
-      let o = ''
-      let l = 0
-      const w = 10240
-      for (; l < data.byteLength / w; ++l) o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w, l * w + w)))
-      o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w)))
-      return o
     },
     getHeaderRow(sheet) {
       const headers = []
@@ -126,11 +119,11 @@ export default {
 </script>
 
 <style scoped>
-#excel-upload-input{
+.excel-upload-input{
   display: none;
   z-index: -9999;
 }
-#drop{
+.drop{
   border: 2px dashed #bbb;
   width: 600px;
   height: 160px;

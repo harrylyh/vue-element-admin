@@ -1,6 +1,6 @@
 /** When your routing table is too long, you can split it into small modules**/
 
-import Layout from '@/views/layout/Layout'
+import Layout from '@/layout'
 
 const componentsRouter = {
   path: '/components',
@@ -77,6 +77,12 @@ const componentsRouter = {
       component: () => import('@/views/components-demo/dragDialog'),
       name: 'DragDialogDemo',
       meta: { title: 'dragDialog' }
+    },
+    {
+      path: 'drag-select',
+      component: () => import('@/views/components-demo/dragSelect'),
+      name: 'DragSelectDemo',
+      meta: { title: 'dragSelect' }
     },
     {
       path: 'dnd-list',
